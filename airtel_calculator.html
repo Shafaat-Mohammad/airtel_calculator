@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Airtel Retailer - Monthly Incentive Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc; /* Light blue-gray background */
+            color: #334155; /* Darker text */
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 0.75rem; /* Rounded corners */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Soft shadow */
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+        h2 {
+            color: #d80000; /* Airtel red */
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px; /* Space between logo and text */
+        }
+        .instruction {
+            text-align: left;
+            color: #64748b; /* Gray text */
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        .emboss-line {
+            height: 2px;
+            background: linear-gradient(to right, #e2e8f0, #cbd5e1, #e2e8f0);
+            box-shadow: inset 0 1px #fff, inset 0 -1px #cbd5e1;
+            margin: 0.5rem 0;
+        }
+        .section {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0; /* Light border */
+        }
+        .section:last-of-type {
+            border-bottom: none;
+        }
+        .section h3 {
+            margin-top: 0.25rem;
+            margin-bottom: 0.5rem;
+            color: #1e293b; /* Darker heading */
+            font-weight: 500;
+        }
+        .row {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        .row label {
+            flex: 1;
+            font-weight: 500;
+            color: #475569; /* Medium gray text */
+        }
+        .row input,
+        .row select {
+            flex: 0 0 100px; /* Fixed width for inputs */
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            border: 1px solid #cbd5e1; /* Light border */
+            border-radius: 0.375rem; /* Slightly rounded */
+            text-align: right;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .row input:focus,
+        .row select:focus {
+            border-color: #d80000; /* Highlight on focus with Airtel red */
+            box-shadow: 0 0 0 2px rgba(216, 0, 0, 0.2);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        .action-buttons button {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            font-size: 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            font-weight: 600;
+        }
+        .calculate-btn {
+            background-color: #22c55e; /* Green for calculate */
+            color: white;
+        }
+        .calculate-btn:hover {
+            background-color: #16a34a;
+            transform: translateY(-1px);
+        }
+        .reset-btn {
+            background-color: #ef4444; /* Red for reset */
+            color: white;
+        }
+        .reset-btn:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
+        }
+        .post-instruction {
+            text-align: left;
+            color: #94a3b8; /* Lighter gray */
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 450px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            z-index: 1000;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            max-height: 90%;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .modal h3 {
+            text-align: center;
+            color: #d80000; /* Airtel red */
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+        .modal table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .modal th,
+        .modal td {
+            padding: 0.6rem;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+        }
+        .modal th {
+            background-color: #f1f5f9; /* Light header background */
+            font-weight: 600;
+            color: #475569;
+        }
+        .modal tr:nth-child(even) {
+            background-color: #f8fafc; /* Zebra striping */
+        }
+        .modal tr.bonus-row td {
+            font-weight: bold;
+            background-color: #fee2e2; /* Light red for bonus rows */
+            color: #d80000;
+        }
+        .modal tfoot th {
+            background-color: #fecaca; /* Darker red for total */
+            color: #1e293b;
+            font-size: 1rem;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); /* Darker overlay */
+            z-index: 999;
+        }
+        .error-message {
+            color: #ef4444; /* Red for errors */
+            font-size: 0.75rem;
+            margin-left: 0.25rem;
+            flex: 1; /* Allow error message to take space */
+            text-align: right;
+        }
+        .share-btn {
+            background-color: #25d366; /* WhatsApp green */
+            color: white;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+            font-weight: 600;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .share-btn:hover {
+            background-color: #1da851;
+            transform: translateY(-1px);
+        }
+        .download-btn {
+            background-color: #3b82f6; /* Blue for download */
+            color: white;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-top: 0.75rem;
+            width: 100%;
+            font-weight: 600;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .download-btn:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        /* Specific styling for input widths on smaller screens */
+        @media screen and (max-width: 480px) {
+            .container {
+                padding: 1rem;
+            }
+            .row label {
+                font-size: 0.85rem;
+            }
+            .row input,
+            .row select {
+                flex: 0 0 80px; /* Adjust width for smaller screens */
+                font-size: 0.85rem;
+            }
+            .action-buttons {
+                flex-direction: column;
+            }
+            .action-buttons button {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            .modal {
+                width: 95%;
+                padding: 0.75rem;
+            }
+            .modal th,
+            .modal td {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>
+            <img src="https://placehold.co/40x40/d80000/ffffff?text=A" alt="Airtel Logo Placeholder" style="border-radius: 50%;">
+            Airtel Retailer - Monthly Incentive Calculator
+        </h2>
+        <p class="instruction">
+            *This calculator provides tentative payouts. Final incentives will be as per company system, subject to eligibility and conditions.<br>
+            *Enter your monthly committed numbers below.
+        </p>
+        <div class="emboss-line"></div>
+
+        <div class="section">
+            <h3>Retailer Information</h3>
+            <div class="row">
+                <label for="retailerType">Retailer Type (Tag_1)</label>
+                <select id="retailerType">
+                    <option value="" disabled selected>Select Type</option>
+                    <option value="D2D">D2D</option>
+                    <option value="Sham">Sham</option>
+                    <option value="Promoter">Promoter</option>
+                    <option value="SOS">SOS</option>
+                    <option value="Trade">Trade</option>
+                    <option value="U_Store">Urban Store</option>
+                    <option value="R_Store">Rural Store</option>
+                    <option value="AP">AP</option>
+                </select>
+                <span class="error-message" id="err-retailerType"></span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>MNP Projections</h3>
+            <div class="row">
+                <label for="mnpProjection">Total MNP Projection</label>
+                <input type="number" id="mnpProjection" min="0" max="99999" placeholder="0">
+                <span class="error-message" id="err-mnpProjection"></span>
+            </div>
+            <div class="row">
+                <label for="jioP">4G MNP Projection (4G MNP_P)</label>
+                <input type="number" id="jioP" min="0" max="99999" placeholder="0">
+                <span class="error-message" id="err-jioP"></span>
+            </div>
+            <div class="row">
+                <label for="nJioP">Non-4G MNP Projection (N4G_P)</label>
+                <input type="number" id="nJioP" min="0" max="99999" placeholder="0">
+                <span class="error-message" id="err-nJioP"></span>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="calculate-btn" onclick="calculate()">Calculate</button>
+            <button class="reset-btn" onclick="resetFields()">Reset</button>
+        </div>
+        <p class="post-instruction">
+            *This calculator provides tentative payouts.<br>
+            * Created by GT retailer.
+        </p>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closePopup()"></div>
+    <div class="modal" id="resultModal">
+        <h3>Your Total Earning</h3>
+        <p class="post-instruction">*This calculator provides tentative payouts</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Payout Type</th>
+                    <th>Calculated Amount</th>
+                </tr>
+            </thead>
+            <tbody id="resultTableBody"></tbody>
+            <tfoot>
+                <tr>
+                    <th>Grand Total</th>
+                    <th id="grandTotal">₹0.00</th>
+                </tr>
+            </tfoot>
+        </table>
+        <button class="share-btn" onclick="shareWhatsApp()">Share via WhatsApp</button>
+        <button class="download-btn" onclick="downloadImage()">Download as Image</button>
+    </div>
+
+    <script>
+        // Function to reset all input fields and clear error messages
+        function resetFields() {
+            const inputs = document.querySelectorAll("input[type='number']");
+            inputs.forEach(input => {
+                input.value = "";
+                const errEl = document.getElementById('err-' + input.id);
+                if (errEl) errEl.innerText = '';
+            });
+            document.getElementById("retailerType").selectedIndex = 0;
+            const errRetailerType = document.getElementById('err-retailerType');
+            if (errRetailerType) errRetailerType.innerText = '';
+        }
+
+        // Function to share the modal content as an image via WhatsApp
+        function shareWhatsApp() {
+            const modal = document.getElementById("resultModal");
+            const total = document.getElementById("grandTotal").innerText;
+            const message = `My total Airtel Retailer earning this month is ${total}. Summary below 👇`;
+
+            // Temporarily adjust modal style for better screenshot
+            const originalMaxHeight = modal.style.maxHeight;
+            const originalOverflow = modal.style.overflow;
+            modal.style.maxHeight = 'none';
+            modal.style.overflow = 'visible';
+
+            setTimeout(() => {
+                html2canvas(modal, { scale: 2, useCORS: true }).then(canvas => { // Increased scale for better quality
+                    // Restore original modal style
+                    modal.style.maxHeight = originalMaxHeight;
+                    modal.style.overflow = originalOverflow;
+
+                    canvas.toBlob(function(blob) {
+                        const file = new File([blob], "incentive_summary.png", { type: "image/png" });
+
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            navigator.share({
+                                files: [file],
+                                text: message
+                            }).catch((error) => {
+                                console.error('Error sharing:', error);
+                                // Fallback for sharing failure (e.g., user cancels)
+                                // No alert, just log or silent fail
+                            });
+                        } else {
+                            // Custom message box instead of alert
+                            showCustomMessage("Sharing not fully supported on this browser. Please use a mobile device or take a screenshot manually.");
+                        }
+                    }, 'image/png', 1.0); // Specify image type and quality
+                });
+            }, 100); // Small delay to ensure styles are applied
+        }
+
+        // Function to download the modal content as an image
+        function downloadImage() {
+            const modal = document.getElementById("resultModal");
+
+            // Temporarily adjust modal style for better screenshot
+            const originalMaxHeight = modal.style.maxHeight;
+            const originalOverflow = modal.style.overflow;
+            modal.style.maxHeight = 'none';
+            modal.style.overflow = 'visible';
+
+            setTimeout(() => {
+                html2canvas(modal, { scale: 2, useCORS: true }).then(canvas => { // Increased scale for better quality
+                    // Restore original modal style
+                    modal.style.maxHeight = originalMaxHeight;
+                    modal.style.overflow = originalOverflow;
+
+                    const link = document.createElement("a");
+                    link.download = "incentive-summary.png";
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+                });
+            }, 100); // Small delay to ensure styles are applied
+        }
+
+        // Function to close the result popup modal
+        function closePopup() {
+            document.getElementById("resultModal").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+        }
+
+        // Helper function to get integer value from input, defaults to 0
+        function get(id) {
+            const value = document.getElementById(id)?.value;
+            return parseInt(value) || 0;
+        }
+
+        // Main calculation function
+        function calculate() {
+            const retailerType = document.getElementById("retailerType").value;
+            const mnpProjection = get("mnpProjection");
+            const jioP = get("jioP"); // This corresponds to 4G MNP_P
+            const nJioP = get("nJioP"); // This corresponds to N4G_P
+
+            // Input validation
+            let isValid = true;
+            if (!retailerType) {
+                document.getElementById('err-retailerType').innerText = 'Please select a retailer type.';
+                isValid = false;
+            } else {
+                document.getElementById('err-retailerType').innerText = '';
+            }
+
+            // Basic validation for number inputs (non-negative, integer)
+            const numberInputs = ['mnpProjection', 'jioP', 'nJioP'];
+            numberInputs.forEach(id => {
+                const inputElement = document.getElementById(id);
+                const value = inputElement.value;
+                const errElement = document.getElementById('err-' + id);
+
+                if (value === '') {
+                    errElement.innerText = 'Required';
+                } else if (!Number.isInteger(parseFloat(value))) {
+                    errElement.innerText = 'No decimals';
+                    isValid = false;
+                } else if (parseInt(value) < 0) {
+                    inputElement.value = 0; // Auto-correct to 0
+                    errElement.innerText = 'Positive numbers only';
+                } else {
+                    errElement.innerText = '';
+                }
+            });
+
+            if (!isValid) {
+                // If validation fails, do not proceed with calculation or show modal
+                return;
+            }
+
+            // Initialize all payout variables
+            let d2dAmount = 0;
+            let d2dChannelAmount = 0;
+            let shamSalary400 = 0;
+            let shamSalary300 = 0;
+            let shamSalary250 = 0;
+            let shamSalary200 = 0;
+            let shamPayout = 0;
+            let promoterAmount = 0;
+            let shamSosSalary = 0;
+            let sosPayout = 0;
+            let tradePayout = 0;
+            let promoterNfa = 0;
+            let d2dMonthly = 0;
+            let urbanStoreMonthly = 0;
+            let ruralStoreMonthly = 0;
+            let storeChannel = 0;
+            let apSalary = 0;
+            let apPayout = 0;
+            let promoterChannel = 0;
+            let apChannel = 0;
+
+            // Apply calculations based on retailer type (Tag_1)
+            if (retailerType === 'D2D') {
+                if (mnpProjection >= 65) {
+                    d2dAmount = jioP * 65 + nJioP * 65;
+                }
+                if (mnpProjection >= 20) {
+                    d2dChannelAmount = jioP * 94 + nJioP * 94;
+                }
+                if (mnpProjection >= 150) {
+                    d2dMonthly = 5000;
+                } else if (mnpProjection >= 100 && mnpProjection <= 149) {
+                    d2dMonthly = 3000;
+                } else if (mnpProjection >= 65 && mnpProjection <= 99) {
+                    d2dMonthly = 2000;
+                }
+            } else if (retailerType === 'Sham') {
+                if (mnpProjection >= 301 && mnpProjection < 10050) {
+                    shamSalary400 = jioP * 65 + nJioP * 65;
+                }
+                if (mnpProjection >= 300 && mnpProjection < 10050) {
+                    shamSalary300 = 20000;
+                }
+                if (mnpProjection >= 250 && mnpProjection < 299) {
+                    shamSalary250 = 15000;
+                }
+                if (mnpProjection >= 200 && mnpProjection < 249) {
+                    shamSalary200 = 11000;
+                }
+                if (mnpProjection >= 150) {
+                    shamPayout = Math.min(mnpProjection * 94, 40000);
+                }
+            } else if (retailerType === 'Promoter') {
+                if (mnpProjection >= 1) {
+                    promoterAmount = mnpProjection * 94;
+                }
+                if (mnpProjection >= 300) {
+                    promoterNfa = 6000;
+                } else if (mnpProjection >= 250 && mnpProjection < 299) {
+                    promoterNfa = 5000;
+                } else if (mnpProjection >= 200 && mnpProjection < 249) {
+                    promoterNfa = 4000;
+                } else if (mnpProjection >= 150 && mnpProjection < 199) {
+                    promoterNfa = 3000;
+                }
+                // PROMOTER_Channel is 0 if MNP_Projection >= 150, otherwise it's implicitly 0
+                if (mnpProjection >= 150) {
+                    promoterChannel = 0;
+                }
+            } else if (retailerType === 'SOS') {
+                if (mnpProjection >= 100) {
+                    shamSosSalary = 7000;
+                }
+                if (mnpProjection >= 50) {
+                    sosPayout = mnpProjection * 94;
+                }
+            } else if (retailerType === 'Trade') {
+                if (mnpProjection >= 20) {
+                    tradePayout = mnpProjection * 50;
+                } else if (mnpProjection >= 10 && mnpProjection < 20) {
+                    tradePayout = mnpProjection * 40;
+                } else if (mnpProjection >= 5 && mnpProjection < 10) {
+                    tradePayout = mnpProjection * 30;
+                }
+            } else if (retailerType === 'U_Store') {
+                if (mnpProjection >= 150) {
+                    urbanStoreMonthly = 5000;
+                } else if (mnpProjection >= 100 && mnpProjection < 149) {
+                    urbanStoreMonthly = 3000;
+                }
+                if (mnpProjection >= 1) {
+                    storeChannel = mnpProjection * 94;
+                }
+            } else if (retailerType === 'R_Store') {
+                if (mnpProjection >= 60) {
+                    ruralStoreMonthly = 5000;
+                }
+                if (mnpProjection >= 1) {
+                    storeChannel = mnpProjection * 94;
+                }
+            } else if (retailerType === 'AP') {
+                if (mnpProjection >= 50) {
+                    apSalary = 4000;
+                }
+                if (mnpProjection > 50 && mnpProjection < 1000) {
+                    apPayout = (mnpProjection - 50) * 55;
+                }
+                if (mnpProjection >= 1) {
+                    apChannel = mnpProjection * 94;
+                }
+            }
+
+            // Sum all applicable payouts for the total
+            const totalPayout = d2dAmount + d2dChannelAmount + d2dMonthly + urbanStoreMonthly + ruralStoreMonthly + storeChannel +
+                                shamSalary400 + shamSalary300 + shamSalary250 + shamSalary200 + shamPayout +
+                                promoterAmount + shamSosSalary + sosPayout + tradePayout + apSalary + apPayout +
+                                promoterChannel + promoterNfa + apChannel;
+
+            // Populate the result table
+            const resultBody = document.getElementById("resultTableBody");
+            resultBody.innerHTML = ""; // Clear previous results
+
+            // Helper to add a row if amount is not zero
+            const addRow = (label, amount) => {
+                if (amount > 0) {
+                    resultBody.innerHTML += `<tr><td>${label}</td><td>₹${amount.toFixed(2)}</td></tr>`;
+                }
+            };
+
+            // Add rows for each potential payout
+            addRow("D2D Amount", d2dAmount);
+            addRow("D2D Channel Amount", d2dChannelAmount);
+            addRow("D2D Monthly Incentive", d2dMonthly);
+            addRow("Urban Store Monthly Incentive", urbanStoreMonthly);
+            addRow("Rural Store Monthly Incentive", ruralStoreMonthly);
+            addRow("Store Channel Incentive", storeChannel);
+            addRow("Sham Salary (MNP >= 301)", shamSalary400);
+            addRow("Sham Salary (MNP >= 300)", shamSalary300);
+            addRow("Sham Salary (MNP >= 250)", shamSalary250);
+            addRow("Sham Salary (MNP >= 200)", shamSalary200);
+            addRow("Sham Payout", shamPayout);
+            addRow("Promoter Amount", promoterAmount);
+            addRow("Sham SOS Salary", shamSosSalary);
+            addRow("SOS Payout", sosPayout);
+            addRow("Trade Payout", tradePayout);
+            addRow("AP Salary", apSalary);
+            addRow("AP Payout", apPayout);
+            addRow("Promoter Channel Incentive", promoterChannel); // Will be 0 if applicable per rule
+            addRow("Promoter NFA", promoterNfa);
+            addRow("AP Channel Incentive", apChannel);
+
+            // If no specific payouts, show a message
+            if (resultBody.innerHTML === "") {
+                resultBody.innerHTML = `<tr><td colspan="2" style="text-align: center;">No specific payouts for selected criteria.</td></tr>`;
+            }
+
+            document.getElementById("grandTotal").innerText = `₹${totalPayout.toFixed(2)}`;
+            document.getElementById("resultModal").style.display = "block";
+            document.getElementById("overlay").style.display = "block";
+        }
+
+        // Attach event listeners for input validation
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', () => {
+                const val = input.value;
+                const errEl = document.getElementById('err-' + input.id);
+
+                if (val === '') {
+                    errEl.innerText = 'Required';
+                } else if (val.includes('.')) {
+                    input.value = Math.floor(val); // Auto-correct to integer
+                    errEl.innerText = 'No decimals allowed';
+                } else if (parseInt(val) < 0) {
+                    input.value = 0; // Auto-correct to 0
+                    errEl.innerText = 'Positive numbers only';
+                } else {
+                    errEl.innerText = '';
+                }
+            });
+        });
+
+        // Custom message box function (replaces alert)
+        function showCustomMessage(message) {
+            const messageBox = document.createElement('div');
+            messageBox.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-xl z-[1001] border border-gray-200 text-center max-w-xs';
+            messageBox.innerHTML = `
+                <p class="text-gray-800 text-lg mb-4">${message}</p>
+                <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md" onclick="this.parentNode.remove();">OK</button>
+            `;
+            document.body.appendChild(messageBox);
+        }
+    </script>
+</body>
+</html>
